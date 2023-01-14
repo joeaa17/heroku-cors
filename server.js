@@ -23,11 +23,7 @@ cors_proxy.createServer({
   originBlacklist: originBlacklist,
   originWhitelist: originWhitelist,
   requireHeader: [
-    'origin',
-    'x-requested-with',
-    'x-requested-by',
-    'x-requested-for',
-    'x-requested-from'
+    'origin', 'x-requested-with'
   ],
   checkRateLimit: checkRateLimit,
   removeHeaders: [
@@ -45,6 +41,13 @@ cors_proxy.createServer({
     xfwd: false,
     secure: false
   },
+  
+  setHeaders: {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
+  }
+
 }).listen(port, host, function() {
   console.log('Running CORS Anywhere on ' + host + ':' + port);
 });
