@@ -19,11 +19,12 @@ function parseEnvList(env) {
 var checkRateLimit = require('./lib/rate-limit')(process.env.CORSANYWHERE_RATELIMIT);
 
 var cors_proxy = require('./lib/cors-anywhere');
+
 cors_proxy.createServer({
   originBlacklist: originBlacklist,
   originWhitelist: originWhitelist,
   requireHeader: [
-    
+    'origin',
   ],
   checkRateLimit: checkRateLimit,
   removeHeaders: [
@@ -40,7 +41,7 @@ cors_proxy.createServer({
     // Do not add X-Forwarded-For, etc. headers, because Heroku already adds it.
     xfwd: false,
     secure: false,
-    agent: false
+    
   },
   
   setHeaders: {
@@ -48,7 +49,9 @@ cors_proxy.createServer({
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
     'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
     'Access-Control-Allow-Credentials': true
-  }
+  },
+
+  referrerPolicy: 'no-referrer',
 
 }).listen(port, host, function() {
   console.log('Running CORS Anywhere on ' + host + ':' + port);
