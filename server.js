@@ -38,11 +38,12 @@ cors_proxy.createServer({
   redirectSameOrigin: true,
   httpProxyOptions: {
     // Do not add X-Forwarded-For, etc. headers, because Heroku already adds it.
-    xfwd: false,
+    xfwd: true,
     secure: false
   },
   
   setHeaders: {
+    'Access-Control-Allow-Origin': ['*'],
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
     'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
     'Access-Control-Allow-Credentials': true
