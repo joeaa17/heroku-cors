@@ -23,7 +23,7 @@ cors_proxy.createServer({
   originBlacklist: originBlacklist,
   originWhitelist: originWhitelist,
   requireHeader: [
-    'origin', 'x-requested-with'
+    
   ],
   checkRateLimit: checkRateLimit,
   removeHeaders: [
@@ -35,7 +35,7 @@ cors_proxy.createServer({
     'x-heroku-dynos-in-use',
     'x-request-start',
   ],
-  redirectSameOrigin: true,
+  redirectSameOrigin: false,
   httpProxyOptions: {
     // Do not add X-Forwarded-For, etc. headers, because Heroku already adds it.
     xfwd: false,
@@ -45,7 +45,8 @@ cors_proxy.createServer({
   setHeaders: {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-    'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
+    'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+    'Access-Control-Allow-Credentials': true
   }
 
 }).listen(port, host, function() {
