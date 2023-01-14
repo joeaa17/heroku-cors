@@ -24,12 +24,11 @@ cors_proxy.createServer({
   originBlacklist: originBlacklist,
   originWhitelist: originWhitelist,
   requireHeader: [
-    'origin',
   ],
   checkRateLimit: checkRateLimit,
   removeHeaders: [
-    // 'cookie',
-    // 'cookie2',
+    'cookie',
+    'cookie2',
     // Strip Heroku-specific headers
     'x-heroku-queue-wait-time',
     'x-heroku-queue-depth',
@@ -43,6 +42,19 @@ cors_proxy.createServer({
     secure: false,
     toProxy: true,
     changeOrigin: true,
+    agent: false,
+    headers: {
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+      'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      'accept-language': 'en-US,en;q=0.9',
+      'accept-encoding': 'gzip, deflate, br',
+      'cache-control': 'max-age=0',
+    },
+
+    proxyTimeout: 30000,
+    timeout: 30000,
+    selfHandleResponse: true,
+
   },
   
   setHeaders: {
