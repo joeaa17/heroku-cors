@@ -54,6 +54,9 @@ cors_proxy.createServer({
     proxyTimeout: 30000,
     timeout: 30000,
     selfHandleResponse: true,
+    followRedirects: true,
+    autoRewrite: true,
+    preserveHeaderKeyCase: true,
 
   },
   
