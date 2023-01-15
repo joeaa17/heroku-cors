@@ -1,3 +1,5 @@
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+
 // Heroku defines the environment variable PORT, and requires the binding address to be 0.0.0.0
 var host = process.env.PORT ? '0.0.0.0' : '127.0.0.1';
 var port = process.env.PORT || 8080;
