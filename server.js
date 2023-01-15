@@ -42,10 +42,11 @@ var cors_proxy = require('./lib/cors-anywhere');
 
 const main = async () => {
   
-  await run('openssl genrsa -out lib/key.pem');
-  await run('openssl req -new -key lib/key.pem -out lib/csr.pem');
-  await run('openssl x509 -req -days 9999 -in lib/csr.pem -signkey lib/key.pem -out lib/cert.pem');
-  await run('rm lib/csr.pem')
+  // generate key.pem
+  // await run('openssl req -x509 -newkey rsa:4096 -keyout lib/key.pem -out lib/cert.pem -sha256 -days 365');
+  // generate cert.pem
+  
+
 
 cors_proxy.createServer({
   originBlacklist: originBlacklist,
