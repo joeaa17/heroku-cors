@@ -2,20 +2,15 @@
 const { exec } = require('child_process');
 
 const run = async (cmd) => {
-  exec(
-    cmd
-    , (err, stdout, stderr) => {
-    if (err) {
-      // node couldn't execute the command
-      console.log('err', err);
-      return;
-    }
-
-    // the *entire* stdout and stderr (buffered)
-    console.log(`stdout: ${stdout}`);
-    console.log(`stderr: ${stderr}`);
+  return new Promise((resolve, reject) => {
+    exec(cmd, (err, stdout, stderr) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(stdout ? stdout : stderr);
+      }
+    });
   });
-
 }
 
 
@@ -41,9 +36,18 @@ var checkRateLimit = require('./lib/rate-limit')(process.env.CORSANYWHERE_RATELI
 var cors_proxy = require('./lib/cors-anywhere');
 
 const main = async () => {
-  
+
+  // openssl does not exist in nodejs so we need to run it as a child process
+  // generate csr.pem
+  await run('openssl req -new -newkey rsa:2048 -nodes -keyout lib/key.pem -out lib/csr.pem -subj "/C=US/ST=CA/L=San Francisco/O=Example, Inc./CN=example.com"');
+  await run('openssl x509 -req -days 365 -in lib/csr.pem -signkey lib/key.pem -out lib/cert.pem');
   // generate key.pem
-  await run('openssl req -x509 -newkey rsa:4096 -keyout lib/key.pem -out lib/cert.pem -days 365 -nodes');
+  // await run('openssl req -x509 -newkey rsa:4096 -keyout lib/key.pem -out lib/cert.pem -days 365 -nodes');
+
+  // await run('openssl genpkey -algorithm RSA -out lib/example.com.key -aes256');
+  // await run('openssl req -new -key lib/example.com.key -out lib/example.com.csr -subj "/C=US/ST=CA/L=San Francisco/O=Example, Inc./CN=example.com"');
+  // await run('openssl x509 -req -days 365 -in lib/example.com.csr -signkey lib/example.com.key -out lib/example.com.crt');
+
   // generate cert.pem
   
 
