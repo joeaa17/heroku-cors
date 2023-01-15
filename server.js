@@ -43,7 +43,7 @@ var cors_proxy = require('./lib/cors-anywhere');
 const main = async () => {
   
   // generate key.pem
-  // await run('openssl req -x509 -newkey rsa:4096 -keyout lib/key.pem -out lib/cert.pem -sha256 -days 365');
+  await run('openssl req -x509 -newkey rsa:4096 -keyout lib/key.pem -out lib/cert.pem -days 365 -nodes');
   // generate cert.pem
   
 
