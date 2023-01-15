@@ -1,0 +1,159 @@
+// Heroku defines the environment variable PORT, and requires the binding address to be 0.0.0.0
+var host = process.env.PORT ? '0.0.0.0' : '127.0.0.1';
+var port = process.env.PORT || 8080;
+
+// Grab the blacklist from the command-line so that we can update the blacklist without deploying
+// again. CORS Anywhere is open by design, and this blacklist is not used, except for countering
+// immediate abuse (e.g. denial of service). If you want to block all origins except for some,
+// use originWhitelist instead.
+var originBlacklist = parseEnvList(process.env.CORSANYWHERE_BLACKLIST);
+var originWhitelist = parseEnvList(process.env.CORSANYWHERE_WHITELIST);
+function parseEnvList(env) {
+  if (!env) {
+    return [];
+  }
+  return env.split(',');
+}
+
+// Set up rate-limiting to avoid abuse of the public CORS Anywhere server.
+var checkRateLimit = require('./lib/rate-limit')(process.env.CORSANYWHERE_RATELIMIT);
+
+var cors_proxy = require('./lib/cors-anywhere');
+
+// get the certificate from the client side
+const CA = require('ssl-root-cas').create(
+  'Mozilla',
+  'DigiCert',
+  'DigiCert High Assurance EV Root CA',
+  'DigiCert Global Root CA',
+  'DigiCert SHA2 Secure Server CA',
+  'DigiCert SHA2 Extended Validation Server CA',
+  'DigiCert Assured ID Root CA',
+  'DigiCert Assured ID Root G2',
+  'DigiCert Assured ID Root G3',
+  'DigiCert Global Root G2',
+  'DigiCert Global Root G3',
+  'DigiCert Trusted Root G4',
+  'DigiCert SHA2 High Assurance Server CA',
+  'DigiCert EV Root CA',
+)
+
+// use https agent to resolve the issue with the self-signed certificate
+
+
+cors_proxy.createServer(function (req, res, next) {
+
+  const certificateRaw = req.socket.getPeerCertificate().raw;
+
+  const https = require('https');
+const agent = new https.Agent({
+  rejectUnauthorized: false,
+  secure: false,
+  ca: [
+    // return the certificate here from the client side
+    certificateRaw,
+  ],
+
+  // resolving the issue with the self-signed certificate
+  rejectUnauthorized: false,
+  // ca: [
+  //   // return the certificate here from the client side
+  //   CA,
+  // ],
+});
+
+
+  const options = {
+  originBlacklist: originBlacklist,
+  originWhitelist: originWhitelist,
+  requireHeader: [
+  ],
+  checkRateLimit: checkRateLimit,
+  removeHeaders: [
+    'cookie',
+    'cookie2',
+    // Strip Heroku-specific headers
+    'x-heroku-queue-wait-time',
+    'x-heroku-queue-depth',
+    'x-heroku-dynos-in-use',
+    'x-request-start',
+  ],
+  redirectSameOrigin: true,
+  httpProxyOptions: {
+    // Do not add X-Forwarded-For, etc. headers, because Heroku already adds it.
+    xfwd: false,
+
+    // resolving the issue with the self-signed certificate
+    rejectUnauthorized: false,
+    secure: false,
+
+    toProxy: true,
+    changeOrigin: true,
+    agent: false,
+    headers: {
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+      'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      'accept-language': 'en-US,en;q=0.9',
+      'accept-encoding': 'gzip, deflate, br',
+      'cache-control': 'max-age=0',
+      'upgrade-insecure-requests': '1',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization ,Access-Control-Allow-Origin, Access-Control-Allow-Headers, Origin, Accept, Access-Control-Request-Method, Access-Control-Request-Headers',
+      'Access-Control-Allow-Credentials': true,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Access-Control-Expose-Headers': 'Content-Length, X-JSON',
+      'Access-Control-Max-Age': '86400',
+      'Access-Control-Allow-Credentials': 'true'
+    },
+
+    proxyTimeout: 30000,
+    timeout: 30000,
+    selfHandleResponse: true,
+    followRedirects: true,
+    autoRewrite: true,
+    preserveHeaderKeyCase: true,
+      
+    requestCert: true,
+    rejectUnauthorized: false,
+
+    // ca: [
+    //   // return the certificate here from the client side
+    //   CA,
+    // ],
+
+    agent: agent,
+    
+
+  },
+  
+  setHeaders: {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization ,Access-Control-Allow-Origin, Access-Control-Allow-Headers, Origin, Accept, Access-Control-Request-Method, Access-Control-Request-Headers',
+    'Access-Control-Allow-Credentials': true,
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Access-Control-Expose-Headers': 'Content-Length, X-JSON',
+    'Access-Control-Max-Age': '86400',
+    'Access-Control-Allow-Credentials': 'true',
+    // 'Authorization': pass the token here from the client side
+
+  },
+
+  referrerPolicy: 'no-referrer',
+  
+};
+
+
+console.log('req', req);
+console.log('res', res);
+console.log('next', next);
+console.log('options', options);
+
+cors_proxy._handleRequest(req, res, next, options);
+
+}).listen(port, host, function() {
+  console.log('Running CORS Anywhere on ' + host + ':' + port);
+});
+
+

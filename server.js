@@ -1,5 +1,3 @@
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
-
 // Heroku defines the environment variable PORT, and requires the binding address to be 0.0.0.0
 var host = process.env.PORT ? '0.0.0.0' : '127.0.0.1';
 var port = process.env.PORT || 8080;
@@ -19,7 +17,6 @@ function parseEnvList(env) {
 
 // Set up rate-limiting to avoid abuse of the public CORS Anywhere server.
 var checkRateLimit = require('./lib/rate-limit')(process.env.CORSANYWHERE_RATELIMIT);
-
 var cors_proxy = require('./lib/cors-anywhere');
 
 cors_proxy.createServer({
