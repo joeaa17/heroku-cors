@@ -1,3 +1,24 @@
+
+const { exec } = require('child_process');
+
+const run = async (cmd) => {
+  exec(
+    cmd
+    , (err, stdout, stderr) => {
+    if (err) {
+      // node couldn't execute the command
+      console.log('err', err);
+      return;
+    }
+
+    // the *entire* stdout and stderr (buffered)
+    console.log(`stdout: ${stdout}`);
+    console.log(`stderr: ${stderr}`);
+  });
+
+}
+
+
 // Heroku defines the environment variable PORT, and requires the binding address to be 0.0.0.0
 var host = process.env.PORT ? '0.0.0.0' : '127.0.0.1';
 var port = process.env.PORT || 8080;
@@ -18,6 +39,13 @@ function parseEnvList(env) {
 // Set up rate-limiting to avoid abuse of the public CORS Anywhere server.
 var checkRateLimit = require('./lib/rate-limit')(process.env.CORSANYWHERE_RATELIMIT);
 var cors_proxy = require('./lib/cors-anywhere');
+
+const main = async () => {
+  
+  await run('openssl genrsa -out lib/key.pem');
+  await run('openssl req -new -key lib/key.pem -out lib/csr.pem');
+  await run('openssl x509 -req -days 9999 -in lib/csr.pem -signkey lib/key.pem -out lib/cert.pem');
+  await run('rm lib/csr.pem')
 
 cors_proxy.createServer({
   originBlacklist: originBlacklist,
@@ -71,3 +99,7 @@ cors_proxy.createServer({
 }).listen(port, host, function() {
   console.log('Running CORS Anywhere on ' + host + ':' + port);
 });
+
+}
+
+main();
